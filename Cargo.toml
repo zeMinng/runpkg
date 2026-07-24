@@ -1,0 +1,19 @@
+[package]
+name = "runpkg"
+version = "0.1.0"
+edition = "2024"
+authors = ["zeMinng"]
+
+[dependencies]
+# 命令行参数解析
+clap = { version = "4.5", features = ["derive", "cargo"] }
+
+# 异步运行时
+tokio = { version = "1.38", features = ["full"] }
+
+# 终端交互与色彩输出
+colored = "2.1"
+inquire = "0.7"
+
+# 错误处理
+anyhow = "1.0"
