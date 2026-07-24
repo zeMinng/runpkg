@@ -11,7 +11,8 @@
     "esModuleInterop": true,
     "noEmit": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@pkg": ["./package.json"],
     }
   },
   "include": ["tsdown.config.ts", "src",],

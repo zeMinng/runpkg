@@ -23,7 +23,16 @@
     "type": "git",
     "url": "git+https://github.com/zeMinng/runpkg.git"
   },
-  "keywords": ["package", "package.json", "npm", "pnpm", "yarn", "cli", "terminal", "interactive"],
+  "keywords": [
+    "package",
+    "package.json",
+    "npm",
+    "pnpm",
+    "yarn",
+    "cli",
+    "terminal",
+    "interactive"
+  ],
   "author": "zeMinng",
   "license": "MIT",
   "bugs": {
@@ -35,7 +44,10 @@
     "provenance": true
   },
   "devDependencies": {
+    "@types/node": "^26.1.1",
     "bumpp": "^12.0.0",
+    "mri": "^1.2.0",
+    "picocolors": "^1.1.1",
     "tsdown": "^0.22.13",
     "typescript": "^7.0.2"
   }
