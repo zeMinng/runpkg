@@ -1,4 +1,3 @@
 pub mod args;
-pub mod printer;
 
-pub use args::*;
+pub use args::{Args, Commands};
