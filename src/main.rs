@@ -1,5 +1,7 @@
 mod cli;
 mod constants;
+mod system;
+mod project;
 
 use crate::constants::app::{
     APP_NAME,
@@ -11,8 +13,12 @@ use clap::Parser;
 use cli::{
     Args,
     Commands,
-    get_target_project_info,
-    get_local_node_version,
+};
+use system::runtime::collect_runtime_info;
+use std::path::Path;
+use project::{
+    package_json,
+    info::ProjectInfo,
 };
 
 
@@ -20,12 +26,27 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
     println!("{} v{} {} {}", APP_NAME, APP_VERSION, APP_AUTHORS, APP_DESCRIPTION);
 
-    if let Some(node_ver) = get_local_node_version() {
-        println!("Node 版本: {}", node_ver);
-    }
+    let runtime = collect_runtime_info();
+    println!("{:?}", runtime.node_version);
 
-    if let Some(pkg) = get_target_project_info() {
-        println!("项目: {:?}", pkg.name);
+    let package = package_json::load(
+        Path::new(".")
+    );
+    let Some(package) = package else {
+        println!("package.json not found");
+        return Ok(());
+    };
+    let project: ProjectInfo = package.into();
+    println!("{:#?}", project);
+
+
+    match runtime.node_version {
+        Some(version) => {
+            println!("Node版本: {}", version);
+        }
+        None => {
+            println!("没有检测到 Node");
+        }
     }
 
     match args.command {
