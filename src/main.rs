@@ -6,66 +6,46 @@ mod project;
 use crate::constants::app::{
     APP_NAME,
     APP_VERSION,
-    APP_DESCRIPTION,
-    APP_AUTHORS,
 };
 use clap::Parser;
-use cli::{
-    Args,
-    Commands,
-};
+use cli::{Args, Commands};
 use system::runtime::collect_runtime_info;
-use std::path::Path;
 use project::{
     package_json,
     info::ProjectInfo,
 };
 
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
-    println!("{} v{} {} {}", APP_NAME, APP_VERSION, APP_AUTHORS, APP_DESCRIPTION);
 
-    let runtime = collect_runtime_info();
-    println!("{:?}", runtime.node_version);
+    // Print banner + version
+    println!("{} v{}", APP_NAME, APP_VERSION);
 
-    let package = package_json::load(
-        Path::new(".")
-    );
-    let Some(package) = package else {
-        println!("package.json not found");
-        return Ok(());
+    // Collect runtime info (async — Node version + available PMs)
+    let runtime = collect_runtime_info().await;
+    println!("{:?}", runtime);
+
+    // Load package.json from the specified project directory
+    match package_json::load_from(&args.project_path) {
+        Ok(package) => {
+            let project: ProjectInfo = package.into();
+            println!("{:#?}", project);
+        }
+        Err(e) => {
+            eprintln!("Warning: {}", e);
+        }
+    }
+
+    // Dispatch to subcommand
+    let action = match args.command {
+        Some(Commands::Scripts) => "Scripts",
+        Some(Commands::Deps)    => "Manage deps",
+        Some(Commands::Doctor)  => "Project doctor",
+        None                    => "Start runpkg TUI",
     };
-    let project: ProjectInfo = package.into();
-    println!("{:#?}", project);
-
-
-    match runtime.node_version {
-        Some(version) => {
-            println!("Node版本: {}", version);
-        }
-        None => {
-            println!("没有检测到 Node");
-        }
-    }
-
-    match args.command {
-        Some(Commands::Scripts) => {
-            println!("Scripts");
-        }
-
-        Some(Commands::Deps) => {
-            println!("Manage deps");
-        }
-
-        Some(Commands::Doctor) => {
-            println!("Project doctor");
-        }
-
-        None => {
-            println!("Start runpkg TUI");
-        }
-    }
+    println!("{}", action);
 
     Ok(())
 }

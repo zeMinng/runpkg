@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use clap::{Parser, Subcommand};
 
 use crate::constants::app::{
@@ -21,6 +22,10 @@ use crate::constants::app::{
     after_help = APP_CREDITS
 )]
 pub struct Args {
+    /// Project directory path (default: current directory)
+    #[arg(short = 'p', long = "path", default_value = ".")]
+    pub project_path: PathBuf,
+
     #[command(subcommand)]
     pub command: Option<Commands>,
 }
