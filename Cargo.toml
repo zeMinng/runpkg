@@ -4,6 +4,14 @@ description = "runpkg — Interactive package.json manager for your terminal."
 version = "0.0.1"
 edition = "2024"
 authors = ["zeMinng"]
+repository = "https://github.com/zeMinng/runpkg"
+homepage = "https://github.com/zeMinng/runpkg"
+
+[package.metadata.wix]
+upgrade-guid = "6A2C9775-D39E-4452-BE48-A94D93D7C351"
+path-guid = "9422AC1D-C78E-4099-A190-FBDE45381D86"
+license = false
+eula = false
 
 [dependencies]
 # CLI 参数解析
@@ -20,3 +28,8 @@ anyhow = "1.0"
 tokio = { version = "1.36", features = ["full"] }
 colored = "2.1"
 indexmap = { version = "2.0", features = ["serde"] }
+
+# The profile that 'dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
