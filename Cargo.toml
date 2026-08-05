@@ -29,6 +29,17 @@ tokio = { version = "1.36", features = ["full"] }
 colored = "2.1"
 indexmap = { version = "2.0", features = ["serde"] }
 
+[package.metadata.release]
+# 不签名，避免本地无 GPG key 时报错
+sign-commit = false
+sign-tag = false
+# tag 格式：v0.0.1 → 匹配 .github/workflows/release.yml 的触发规则
+tag-name = "v{{version}}"
+# push 后触发 CI，cargo-dist 自动做 GitHub Release
+push-remote = "origin"
+# 关掉 cargo publish，由 cargo-dist 负责发布
+disable-publish = true
+
 # The profile that 'dist' will build with
 [profile.dist]
 inherits = "release"
