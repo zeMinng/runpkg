@@ -1,38 +1,43 @@
+use std::path::PathBuf;
 use clap::{Parser, Subcommand};
-use crate::constants::{ASCII_BANNER, SLOGAN, HELP_FOOTER};
 
+use crate::constants::app::{
+    BANNER,
+    APP_NAME,
+    APP_VERSION,
+    APP_DESCRIPTION,
+    APP_AUTHORS,
+    APP_CREDITS,
+};
+
+/// runpkg CLI arguments. (运行 runpkg 命令行参数)
 #[derive(Parser, Debug)]
 #[command(
-    name = "runpkg",
-    author = "Your Name <your@email.com>",
-    // 从 Cargo.toml 自动读取版本号，作为 -v/--version 的输出
-    version = env!("CARGO_PKG_VERSION"),
-    // 简短描述
-    about = SLOGAN,
-    // 🎯 核心黑科技：在 -h / --help 的最上方打印 ASCII 艺术字！
-    before_help = ASCII_BANNER,
-    // 🎯 在帮助文档的最下方追加 Tip
-    after_help = HELP_FOOTER
+    name = APP_NAME,
+    bin_name = APP_NAME,
+    author = APP_AUTHORS,
+    version = APP_VERSION,
+    about = APP_DESCRIPTION,
+    before_help = BANNER,
+    after_help = APP_CREDITS
 )]
-pub struct CliArgs {
-    #[command(subcommand)]
-    pub subcommand: Option<SubCommand>,
+pub struct Args {
+    /// Project directory path (default: current directory)
+    #[arg(short = 'p', long = "path", default_value = ".")]
+    pub project_path: PathBuf,
 
-    /// 是否显示冗余的调试日志
-    #[arg(short, long, global = true)]
-    pub verbose: bool,
+    #[command(subcommand)]
+    pub command: Option<Commands>,
 }
 
 #[derive(Subcommand, Debug)]
-pub enum SubCommand {
-    /// 运行指定的 package.json 脚本
-    Run {
-        script: String,
-        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
-        args: Vec<String>,
-    },
-    /// 查看并交互式升级依赖
-    Dep,
-    /// 诊断项目健康状态与僵尸依赖
+pub enum Commands {
+    /// Run package scripts
+    Scripts,
+
+    /// Manage dependencies
+    Deps,
+
+    /// Check project status
     Doctor,
 }

@@ -1,15 +1,22 @@
 [package]
 name = "runpkg"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2024"
+description = "runpkg — Interactive package.json manager for your terminal."
 authors = ["zeMinng"]
 
 [dependencies]
-anyhow = "1.0"
-clap = { version = "4.4", features = ["derive", "env"] }
-crossterm = "0.27"
+# CLI 参数解析
+clap = { version = "4.4", features = ["derive"] }
+# TUI 与终端控制
 ratatui = "0.26"
-tokio = { version = "1.36", features = ["full"] }
-colored = "2.1"
+crossterm = "0.27"
+# 数据序列化与文件解析
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+# 错误处理
+anyhow = "1.0"
+
+tokio = { version = "1.36", features = ["full"] }
+colored = "2.1"
+indexmap = { version = "2.0", features = ["serde"] }
