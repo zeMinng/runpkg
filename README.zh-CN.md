@@ -33,28 +33,28 @@
 
 ## ⚡ 快速安装
 
-得益于 Rust 的单二进制构建，你可以通过多种原生渠道直接安装：
+从 [GitHub Releases](https://github.com/zeMinng/runpkg/releases) 下载最新预编译二进制，或使用一行命令安装：
 
-### 通过 Cargo 安装 (推荐)
+### Windows (PowerShell)
+
+```powershell
+powershell -c "irm https://raw.githubusercontent.com/zeMinng/runpkg/main/scripts/install.ps1 | iex"
+```
+
+### macOS / Linux
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/zeMinng/runpkg/main/scripts/install.sh | sh
+```
+
+### 通过 Cargo 安装
 
 ```bash
 cargo install runpkg
 ```
 
-### 通过 Homebrew 安装 (macOS / Linux)
-
-```bash
-brew install your-username/tap/runpkg
-```
-
-### 快捷安装脚本 (Linux / macOS)
-
-```bash
-curl -fsSL [https://raw.githubusercontent.com/your-username/runpkg/main/install.sh](https://raw.githubusercontent.com/your-username/runpkg/main/install.sh) | sh
-```
-
 > [!TIP]
-> 💡 安装完成后无需全局配置 Node.js npm 包，直接在终端输入 runpkg 或简写 rp 即可启动！
+> 💡 安装完成后无需全局配置 Node.js npm 包，直接在终端输入 runpkg 即可启动！
 
 ## 贡献
 

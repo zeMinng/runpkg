@@ -33,28 +33,28 @@ A next-generation interactive `package.json` console & project cockpit — built
 
 ## ⚡ Quick Install
 
-Thanks to Rust's single-binary build, you can install directly via multiple native channels:
+Download the latest prebuilt binary from [GitHub Releases](https://github.com/zeMinng/runpkg/releases), or use the one-liner:
 
-### Via Cargo (Recommended)
+### Windows (PowerShell)
+
+```powershell
+powershell -c "irm https://raw.githubusercontent.com/zeMinng/runpkg/main/scripts/install.ps1 | iex"
+```
+
+### macOS / Linux
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/zeMinng/runpkg/main/scripts/install.sh | sh
+```
+
+### Via Cargo
 
 ```bash
 cargo install runpkg
 ```
 
-### Via Homebrew (macOS / Linux)
-
-```bash
-brew install your-username/tap/runpkg
-```
-
-### Quick Install Script (Linux / macOS)
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/your-username/runpkg/main/install.sh | sh
-```
-
 > [!TIP]
-> 💡 No global Node.js npm package setup needed — just type `runpkg` (or the shorthand `rp`) in your terminal!
+> 💡 No global Node.js npm package setup needed — just type `runpkg` in your terminal!
 
 ## Contributing
 
