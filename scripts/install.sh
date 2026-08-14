@@ -61,10 +61,50 @@ tar -xzf "$TMP_FILE" -C "$INSTALL_DIR"
 
 chmod +x "$INSTALL_DIR/runpkg"
 
+# Detect the user's shell and pick the matching profile file.
+SHELL_BIN="${SHELL##*/}"
+
+case "$SHELL_BIN" in
+    fish)
+        PROFILE_FILE="$HOME/.config/fish/config.fish"
+        PATH_LINE="fish_add_path \"$INSTALL_DIR\""
+        ;;
+    zsh)
+        PROFILE_FILE="$HOME/.zshrc"
+        PATH_LINE="export PATH=\"$INSTALL_DIR:\$PATH\""
+        ;;
+    bash)
+        if [ "$OS" = "Darwin" ]; then
+            PROFILE_FILE="$HOME/.bash_profile"
+        else
+            PROFILE_FILE="$HOME/.bashrc"
+        fi
+        PATH_LINE="export PATH=\"$INSTALL_DIR:\$PATH\""
+        ;;
+    *)
+        PROFILE_FILE="$HOME/.profile"
+        PATH_LINE="export PATH=\"$INSTALL_DIR:\$PATH\""
+        ;;
+esac
+
+# Ensure the parent directory exists (needed for the fish config path).
+mkdir -p "${PROFILE_FILE%/*}"
+
+# Append the PATH line idempotently (skip if it is already configured).
+if grep -qF "$INSTALL_DIR" "$PROFILE_FILE" 2>/dev/null; then
+    echo ""
+    echo "PATH already configured in:"
+    echo "$PROFILE_FILE"
+else
+    printf '\n# runpkg\n%s\n' "$PATH_LINE" >> "$PROFILE_FILE"
+    echo ""
+    echo "Added runpkg to PATH in:"
+    echo "$PROFILE_FILE"
+fi
+
 echo ""
 echo "Installed to:"
 echo "$INSTALL_DIR"
 echo ""
-echo "Add this to your shell profile:"
-echo ""
-echo "export PATH=\"$INSTALL_DIR:\$PATH\""
+echo "Restart your terminal (or run: source \"$PROFILE_FILE\"), then run:"
+echo "runpkg"
