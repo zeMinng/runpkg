@@ -4,9 +4,15 @@ set -e
 
 REPO="zeMinng/runpkg"
 INSTALL_DIR="$HOME/.runpkg/bin"
-TMP_FILE="/tmp/runpkg.tar.gz"
 
-trap 'rm -f "$TMP_FILE"' EXIT
+# Require the tools used below before doing anything else.
+for cmd in curl tar; do
+    command -v "$cmd" >/dev/null 2>&1 || { echo "Error: $cmd is required but not found."; exit 1; }
+done
+
+TMP_FILE=$(mktemp)
+TMP_CHECKSUM=$(mktemp)
+trap 'rm -f "$TMP_FILE" "$TMP_CHECKSUM"' EXIT
 
 OS=$(uname -s)
 ARCH=$(uname -m)
@@ -43,9 +49,11 @@ esac
 if [ -n "$RUNPKG_VERSION" ]; then
     VERSION="$RUNPKG_VERSION"
     URL="https://github.com/$REPO/releases/download/$VERSION/$PACKAGE"
+    CHECKSUMS_URL="https://github.com/$REPO/releases/download/$VERSION/checksums.txt"
 else
     VERSION="latest"
     URL="https://github.com/$REPO/releases/latest/download/$PACKAGE"
+    CHECKSUMS_URL="https://github.com/$REPO/releases/latest/download/checksums.txt"
 fi
 
 echo "Installing runpkg $VERSION..."
@@ -55,10 +63,25 @@ echo "$URL"
 
 mkdir -p "$INSTALL_DIR"
 
-curl -fL "$URL" -o "$TMP_FILE"
+curl -fL --retry 3 --retry-delay 2 "$URL" -o "$TMP_FILE"
+curl -fL --retry 3 --retry-delay 2 "$CHECKSUMS_URL" -o "$TMP_CHECKSUM"
+
+# Verify SHA256 checksum. Linux ships sha256sum; macOS ships shasum.
+if command -v sha256sum >/dev/null 2>&1; then
+    ACTUAL=$(sha256sum "$TMP_FILE" | awk '{print $1}')
+else
+    ACTUAL=$(shasum -a 256 "$TMP_FILE" | awk '{print $1}')
+fi
+EXPECTED=$(grep "  $PACKAGE\$" "$TMP_CHECKSUM" | awk '{print $1}')
+
+if [ -z "$EXPECTED" ] || [ "$EXPECTED" != "$ACTUAL" ]; then
+    echo "Checksum verification failed for $PACKAGE"
+    exit 1
+fi
 
 tar -xzf "$TMP_FILE" -C "$INSTALL_DIR"
 
+[ -f "$INSTALL_DIR/runpkg" ] || { echo "Error: runpkg binary not found after extraction."; exit 1; }
 chmod +x "$INSTALL_DIR/runpkg"
 
 # Detect the user's shell and pick the matching profile file.
@@ -91,7 +114,7 @@ esac
 mkdir -p "${PROFILE_FILE%/*}"
 
 # Append the PATH line idempotently (skip if it is already configured).
-if grep -qF "$INSTALL_DIR" "$PROFILE_FILE" 2>/dev/null; then
+if grep -qF '.runpkg/bin' "$PROFILE_FILE" 2>/dev/null; then
     echo ""
     echo "PATH already configured in:"
     echo "$PROFILE_FILE"
