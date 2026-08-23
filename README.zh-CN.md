@@ -47,12 +47,6 @@ powershell -c "irm https://raw.githubusercontent.com/zeMinng/runpkg/main/scripts
 curl -fsSL https://raw.githubusercontent.com/zeMinng/runpkg/main/scripts/install.sh | sh
 ```
 
-### 通过 Cargo 安装
-
-```bash
-cargo install runpkg
-```
-
 > [!TIP]
 > 💡 安装完成后无需全局配置 Node.js npm 包，直接在终端输入 runpkg 即可启动！
 
@@ -66,11 +60,11 @@ cargo install runpkg
 4. 推送到分支 (`git push origin feature/AmazingFeature`)
 5. 开启 Pull Request
 
----
+##
 
 <div align="center">
   <p>
-    <sub>🦀 <b>Rust</b> 驱动 · Crafted with ❤️ by <a href="https://github.com/zeMinng">zeMinng</a></sub><br />
-    <sub>Released under the <a href="./LICENSE">MIT License</a> © 2025–present</sub>
+    🦀 <b>Rust</b> 驱动 · Crafted with ❤️ by <a href="https://github.com/zeMinng">zeMinng</a><br />
+    Released under the <a href="./LICENSE">MIT License</a> © 2026–present
   </p>
 </div>

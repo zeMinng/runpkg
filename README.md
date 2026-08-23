@@ -47,12 +47,6 @@ powershell -c "irm https://raw.githubusercontent.com/zeMinng/runpkg/main/scripts
 curl -fsSL https://raw.githubusercontent.com/zeMinng/runpkg/main/scripts/install.sh | sh
 ```
 
-### Via Cargo
-
-```bash
-cargo install runpkg
-```
-
 > [!TIP]
 > 💡 No global Node.js npm package setup needed — just type `runpkg` in your terminal!
 
@@ -66,11 +60,11 @@ Ideas & PRs are welcome — feel free to <a href="https://github.com/zeMinng/run
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
----
+## 
 
 <div align="center">
   <p>
-    <sub>🦀 <b>Rust</b>-powered · Crafted with ❤️ by <a href="https://github.com/zeMinng">zeMinng</a></sub><br />
-    <sub>Released under the <a href="./LICENSE">MIT License</a> © 2025–present</sub>
+    🦀 <b>Rust</b>-powered · Crafted with ❤️ by <a href="https://github.com/zeMinng">zeMinng</a><br />
+    Released under the <a href="./LICENSE">MIT License</a> © 2026–present
   </p>
 </div>
