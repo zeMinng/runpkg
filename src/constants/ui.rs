@@ -1,6 +1,5 @@
-#![allow(dead_code)]
-
-///! UI constants. (UI 常量)
+#[allow(dead_code)]
+//! UI constants. (UI 常量)
 
 /// Prefix icon emoji for various states. (各种状态的前缀 Icon / Emoji)
 pub struct Icons;

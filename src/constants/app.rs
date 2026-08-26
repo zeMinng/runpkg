@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 //! Application metadata. (包含应用名称、版本、描述、作者等基础信息)
 
 /// Terminal startup banner. (终端启动 ASCII Banner / LOGO)

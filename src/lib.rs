@@ -1,7 +1,11 @@
+pub mod app;
 pub mod cli;
 pub mod constants;
 pub mod project;
 pub mod system;
+pub mod tui;
+
+use std::path::{Path, PathBuf};
 
 use crate::constants::app::{APP_NAME, APP_VERSION};
 use cli::Commands;
@@ -13,35 +17,52 @@ pub fn print_app_info() {
     println!("{} v{}", APP_NAME, APP_VERSION);
 }
 
-/// Perform core initialization and logic scheduling. 执行核心初始化与逻辑调度
-pub async fn run_app(args: cli::Args) -> Result<(), Box<dyn std::error::Error>> {
+/// Unified entry point: dispatch to a subcommand or the TUI.
+pub async fn run(args: cli::Args) -> anyhow::Result<()> {
+    match args.command {
+        Some(command) => run_cli(args.project_path, command).await,
+        None => run_tui(args.project_path).await,
+    }
+}
+
+/// CLI subcommand path (`scripts` / `deps` / `doctor`).
+async fn run_cli(project_path: PathBuf, command: Commands) -> anyhow::Result<()> {
     print_app_info();
 
-    // Async collect runtime info (Node version + available PMs). 异步的收集运行时信息（Node 版本 + 可用的包管理器）
     let runtime = collect_runtime_info().await;
-    println!("{:?}", runtime);
+    println!("{runtime:?}");
 
-    // Load package.json from the specified project directory. 加载 package.json
-    match package_json::load_from(&args.project_path) {
+    match package_json::load_from(&project_path) {
         Ok(package) => {
             let project: ProjectInfo = package.into();
-            println!("{:#?}", project);
+            println!("{project:#?}");
         }
-        Err(e) => {
-            eprintln!("Warning: {}", e);
-        }
+        Err(e) => eprintln!("Warning: {e}"),
     }
 
-    // Dispatch to subcommand. 调度子命令
-    let action = match args.command {
-        Some(Commands::Scripts) => "Scripts",
-        Some(Commands::Deps) => "Manage deps",
-        Some(Commands::Doctor) => "Project doctor",
-        None => "Start runpkg TUI",
+    let action = match command {
+        Commands::Scripts => "Scripts",
+        Commands::Deps => "Manage deps",
+        Commands::Doctor => "Project doctor",
     };
-    println!("{}", action);
+    println!("{action}");
 
     Ok(())
 }
 
+/// TUI path: gather runtime + project data, then run the event loop.
+async fn run_tui(project_path: PathBuf) -> anyhow::Result<()> {
+    let (runtime, project) = tokio::join!(
+        collect_runtime_info(),
+        async { load_project(&project_path) }
+    );
 
+    let mut app = app::App::new(app::AppState::new(project, Some(runtime)), project_path);
+    tui::run(&mut app)
+}
+
+fn load_project(project_path: &Path) -> Option<ProjectInfo> {
+    package_json::load_from(project_path)
+        .ok()
+        .map(ProjectInfo::from)
+}
