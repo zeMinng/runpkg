@@ -17,7 +17,7 @@ const PACKAGE_MANAGERS: &[(&str, bool)] = &[
 /// Build a Command to run a package manager's `--version`.
 /// On Windows, `.cmd`/`.bat` files must be executed through `cmd /c`; native
 /// executables (bun) are spawned directly.
-fn build_command(pm: &str, is_cmd_shim: bool) -> Command {
+fn build_command(pm: &str, _is_cmd_shim: bool) -> Command {
     #[cfg(target_os = "windows")]
     {
         let mut cmd = Command::new("cmd");
