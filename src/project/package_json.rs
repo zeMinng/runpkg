@@ -19,8 +19,6 @@ pub struct PackageJson {
     #[serde(rename = "packageManager")]
     pub package_manager: Option<String>,
     pub engines: Option<IndexMap<String, String>>,
-    #[serde(rename = "scripts-info")]
-    pub scripts_info: Option<IndexMap<String, String>>,
 }
 
 /// Load package.json from the current directory. (从当前目录加载 package.json)

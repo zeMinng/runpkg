@@ -1,18 +1,32 @@
 use std::time::Duration;
 use tokio::process::Command;
 
-/// Well-known package managers in priority order.
-const PACKAGE_MANAGERS: &[&str] = &["pnpm", "bun", "yarn", "npm"];
+use crate::project::info::ProjectInfo;
+use crate::system::runtime::RuntimeInfo;
 
-/// Build a Command to run a package manager. On Windows, `.cmd`/`.bat` files
-/// need `cmd /c` to execute; we also append `.cmd` to avoid picking up shell scripts
-/// that happen to share the same name (e.g. `pnpm` the bash wrapper vs `pnpm.cmd`).
-fn build_command(pm: &str) -> Command {
+/// Well-known package managers in priority order.
+/// The boolean marks whether the command is a `.cmd` shim on Windows
+/// (npm / pnpm / yarn ship `.cmd` wrappers; bun is a native `bun.exe`).
+const PACKAGE_MANAGERS: &[(&str, bool)] = &[
+    ("pnpm", true),
+    ("bun", false),
+    ("yarn", true),
+    ("npm", true),
+];
+
+/// Build a Command to run a package manager's `--version`.
+/// On Windows, `.cmd`/`.bat` files must be executed through `cmd /c`; native
+/// executables (bun) are spawned directly.
+fn build_command(pm: &str, is_cmd_shim: bool) -> Command {
     #[cfg(target_os = "windows")]
     {
         let mut cmd = Command::new("cmd");
-        let exe = format!("{}.cmd", pm);
-        cmd.args(["/c", &exe, "--version"]);
+        let target = if is_cmd_shim {
+            format!("{}.cmd", pm)
+        } else {
+            pm.to_string()
+        };
+        cmd.args(["/c", &target, "--version"]);
         cmd
     }
     #[cfg(not(target_os = "windows"))]
@@ -27,10 +41,10 @@ fn build_command(pm: &str) -> Command {
 pub async fn detect_available() -> Vec<String> {
     let mut available = Vec::new();
 
-    for pm in PACKAGE_MANAGERS {
+    for (pm, is_cmd_shim) in PACKAGE_MANAGERS {
         let ok = tokio::time::timeout(
             Duration::from_secs(2),
-            build_command(pm).output(),
+            build_command(pm, *is_cmd_shim).output(),
         )
         .await
         .map(|r| r.map(|o| o.status.success()).unwrap_or(false))
@@ -42,4 +56,51 @@ pub async fn detect_available() -> Vec<String> {
     }
 
     available
+}
+
+/// Resolve which package manager to run scripts with.
+/// Priority: `project.packageManager` name → first available on PATH → `npm`.
+pub fn preferred(project: Option<&ProjectInfo>, runtime: Option<&RuntimeInfo>) -> String {
+    if let Some(name) = project
+        .and_then(|p| p.package_manager.as_deref())
+        .and_then(|s| s.split('@').next())
+    {
+        return name.to_string();
+    }
+
+    if let Some(pm) = runtime.and_then(|r| r.available_package_managers.first()) {
+        return pm.clone();
+    }
+
+    "npm".to_string()
+}
+
+/// Build the command that runs `script` via `pm`.
+/// Returns `(program, args)`; on Windows, `.cmd` shims run through `cmd /c`.
+pub fn build_run_command(pm: &str, script: &str) -> (String, Vec<String>) {
+    #[cfg(target_os = "windows")]
+    {
+        if is_cmd_shim(pm) {
+            return (
+                "cmd".to_string(),
+                vec![
+                    "/c".to_string(),
+                    format!("{pm}.cmd"),
+                    "run".to_string(),
+                    script.to_string(),
+                ],
+            );
+        }
+    }
+
+    (pm.to_string(), vec!["run".to_string(), script.to_string()])
+}
+
+/// Whether `pm` ships a `.cmd`/`.bat` wrapper on Windows (npm/pnpm/yarn do; bun does not).
+fn is_cmd_shim(pm: &str) -> bool {
+    PACKAGE_MANAGERS
+        .iter()
+        .find(|(name, _)| *name == pm)
+        .map(|(_, shim)| *shim)
+        .unwrap_or(true)
 }

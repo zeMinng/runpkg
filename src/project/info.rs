@@ -12,7 +12,6 @@ pub struct ProjectInfo {
     pub peer_dependencies: Vec<DepEntry>,
     pub package_manager: Option<String>,
     pub engines: IndexMap<String, String>,
-    pub scripts_info: IndexMap<String, String>,
 }
 
 #[derive(Debug)]
@@ -32,7 +31,6 @@ impl From<PackageJson> for ProjectInfo {
             peer_dependencies: map_to_entries(pkg.peer_dependencies),
             package_manager: pkg.package_manager,
             engines: pkg.engines.unwrap_or_default(),
-            scripts_info: pkg.scripts_info.unwrap_or_default(),
         }
     }
 }
