@@ -1,0 +1,2 @@
+[alias]
+dev = "watch -c -x run"
