@@ -36,12 +36,9 @@ impl App {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Read-only project/runtime queries used by the presentation layer.
-    // Components and screens should prefer these queries over reaching into
-    // `state` and `project_path` directly.
-    // -------------------------------------------------------------------------
-
+    // Read-only queries form the boundary between application state and the
+    // presentation layer. TUI screens should prefer these over reaching into
+    // `state` directly.
     pub fn project(&self) -> Option<&ProjectInfo> {
         self.state.project.as_ref()
     }
@@ -122,7 +119,7 @@ impl App {
                     self.script_cursor = step(self.script_cursor, delta, self.script_count());
                 }
                 Screen::Dependencies => {
-                    self.dep_cursor = step(self.dep_cursor, delta, self.dep_count());
+                    self.dep_cursor = step(self.dep_cursor, delta, self.dependency_count());
                 }
                 _ => {}
             },
@@ -183,18 +180,10 @@ impl App {
         self.dep_cursor = 0;
     }
 
-    pub fn script_count_for_navigation(&self) -> usize {
-        self.script_count()
-    }
-
     pub fn script_name_at(&self, index: usize) -> Option<String> {
         self.project()
             .and_then(|project| project.scripts.get_index(index))
             .map(|(name, _)| name.clone())
-    }
-
-    pub fn dep_count_for_navigation(&self) -> usize {
-        self.dependency_count()
     }
 
     /// Spawn the script queued by `Action::RunScript`, attaching its output receiver.
