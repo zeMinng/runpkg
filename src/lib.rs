@@ -12,11 +12,12 @@ use project::{info::ProjectInfo, package_json};
 use system::runtime::collect_runtime_info;
 
 
-/// Unified entry point: dispatch to a subcommand or the TUI.
+/// Unified entry point: dispatch to a subcommand or the TUI. (统一入口：分派到子命令或 TUI)
 pub async fn run(args: cli::Args) -> anyhow::Result<()> {
+    let project_path = args.resolve_project_path()?;
     match args.command {
-        Some(command) => run_cli(args.project_path, command).await,
-        None => run_tui(args.project_path).await,
+        Some(command) => run_cli(project_path, command).await,
+        None => run_tui(project_path).await,
     }
 }
 
@@ -44,7 +45,7 @@ async fn run_cli(project_path: PathBuf, command: Commands) -> anyhow::Result<()>
     Ok(())
 }
 
-/// TUI path: gather runtime + project data, then run the event loop.
+/// TUI path: gather runtime + project data, then run the event loop. (TUI 路径：收集运行时项目数据，然后运行事件循环)
 async fn run_tui(project_path: PathBuf) -> anyhow::Result<()> {
     let (runtime, project) = tokio::join!(
         collect_runtime_info(),

@@ -25,5 +25,5 @@ pub const APP_AUTHORS: &str = env!("CARGO_PKG_AUTHORS");
 /// Application credits. (应用版权信息)
 pub const APP_CREDITS: &str = "Developed with ❤️  by \x1b[1;35mzeMinng\x1b[0m";
 
-/// print project name and app version. (打印项目的项目名和版本号)
+/// Print project name and app version. (打印项目的项目名和版本号)
 pub fn print_app_info() { println!("{APP_NAME}, v{APP_VERSION}"); }
