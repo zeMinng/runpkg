@@ -10,15 +10,12 @@ use crate::constants::app::{APP_NAME, APP_VERSION};
 use crate::tui::theme;
 
 /// Render the application header.
-///
-/// Data lookup belongs to `App`; this component is responsible only for
-/// presentation.
 pub fn render(frame: &mut Frame, area: Rect, app: &App) {
     let title = Paragraph::new(Line::from(vec![
         Span::styled(format!(" {APP_NAME} "), theme::title()),
         Span::raw(format!("  {}", app.project_name())),
         Span::styled(format!("  v{}", app.project_version()), theme::dim()),
-        Span::styled(format!("  runpkg v{APP_VERSION}"), theme::dim()),
+        Span::styled(format!("  runpkg {APP_VERSION}"), theme::dim()),
     ]))
     .block(Block::default().borders(Borders::BOTTOM));
 
