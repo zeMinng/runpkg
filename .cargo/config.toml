@@ -1,2 +1,27 @@
 [alias]
+# 1. 通用开发模式（默认使用当前目录，支持手动追加参数，如：cargo dev -- -p ...）
 dev = "watch -c -x run"
+
+# 2. 默认路径模式（指定路径，不带子命令）
+dev-path = ["watch", "-c", "-x", "run -- -p C:\\work_home\\zeMinng\\test"]
+
+# 3. 指定路径 + 运行 scripts 子命令
+dev-scripts = ["watch", "-c", "-x", "run -- -p C:\\work_home\\zeMinng\\test scripts"]
+
+# 4. 指定路径 + 运行 deps 子命令
+dev-deps = ["watch", "-c", "-x", "run -- -p C:\\work_home\\zeMinng\\test deps"]
+
+# 5. 指定路径 + 运行 doctor 子命令
+dev-doctor = ["watch", "-c", "-x", "run -- -p C:\\work_home\\zeMinng\\test doctor"]
+
+# 6. 查看完整帮助信息（包含 BANNER、ABOUT、COMMANDS、CREDITS 等）
+dev-help = ["watch", "-c", "-x", "run -- --help"]
+
+# 7. 查看简短帮助信息
+dev-h = ["watch", "-c", "-x", "run -- -h"]
+
+# 8. 查看版本号
+dev-version = ["watch", "-c", "-x", "run -- --version"]
+
+# 9. 查看指定子命令的帮助（以 scripts 为例）
+dev-help-scripts = ["watch", "-c", "-x", "run -- scripts --help"]

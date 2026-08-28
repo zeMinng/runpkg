@@ -17,6 +17,7 @@ use crate::constants::tui::FRAME_RATE;
 
 use event::{next_event, Event};
 use terminal::TerminalGuard;
+// use crate::app;
 
 /// Run the TUI event loop until the app signals it should quit.
 pub fn run(app: &mut App) -> anyhow::Result<()> {
@@ -56,7 +57,7 @@ fn render(frame: &mut Frame, app: &App) {
         ])
         .split(area);
 
-    components::header::render(frame, layout[0]);
+    components::header::render(frame, layout[0], app);
 
     let body = Layout::default()
         .direction(Direction::Horizontal)

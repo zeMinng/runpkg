@@ -23,8 +23,8 @@ use crate::constants::app::{
 )]
 pub struct Args {
     /// Project directory path (default: current directory)
-    #[arg(short = 'p', long = "path", default_value = ".")]
-    pub project_path: PathBuf,
+    #[arg(short = 'p', long = "path")]
+    pub project_path: Option<PathBuf>,
 
     #[command(subcommand)]
     pub command: Option<Commands>,
@@ -40,4 +40,13 @@ pub enum Commands {
 
     /// Check project status
     Doctor,
+}
+
+impl Args {
+    pub fn resolve_project_path(&self) -> std::io::Result<PathBuf> {
+        match &self.project_path {
+            Some(path) => std::fs::canonicalize(path),
+            None => std::env::current_dir(),
+        }
+    }
 }

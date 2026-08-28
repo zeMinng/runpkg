@@ -7,15 +7,10 @@ pub mod tui;
 
 use std::path::{Path, PathBuf};
 
-use crate::constants::app::{APP_NAME, APP_VERSION};
 use cli::Commands;
 use project::{info::ProjectInfo, package_json};
 use system::runtime::collect_runtime_info;
 
-/// Print name and version. 打印应用名称与版本
-pub fn print_app_info() {
-    println!("{} v{}", APP_NAME, APP_VERSION);
-}
 
 /// Unified entry point: dispatch to a subcommand or the TUI.
 pub async fn run(args: cli::Args) -> anyhow::Result<()> {
@@ -27,7 +22,6 @@ pub async fn run(args: cli::Args) -> anyhow::Result<()> {
 
 /// CLI subcommand path (`scripts` / `deps` / `doctor`).
 async fn run_cli(project_path: PathBuf, command: Commands) -> anyhow::Result<()> {
-    print_app_info();
 
     let runtime = collect_runtime_info().await;
     println!("{runtime:?}");
