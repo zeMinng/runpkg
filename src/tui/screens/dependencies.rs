@@ -8,7 +8,7 @@ pub fn render(frame: &mut Frame, app: &App, area: Rect) {
     dependency_list::render(
         frame,
         area,
-        app.state.project.as_ref(),
+        app.project(),
         app.dep_cursor,
         focused,
     );

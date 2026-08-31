@@ -21,8 +21,8 @@ pub fn render(frame: &mut Frame, app: &App, area: Rect) {
     )));
     lines.push(Line::from(""));
 
-    let project = app.state.project.as_ref();
-    let runtime = app.state.runtime.as_ref();
+    let project = app.project();
+    let runtime = app.runtime();
 
     check(&mut lines, "package.json loaded", project.is_some());
     check(
@@ -40,15 +40,11 @@ pub fn render(frame: &mut Frame, app: &App, area: Rect) {
         "packageManager declared",
         project.map(|p| p.package_manager.is_some()).unwrap_or(false),
     );
-    check(
-        &mut lines,
-        "Node.js detected",
-        runtime.and_then(|r| r.node_version.clone()).is_some(),
-    );
+    check(&mut lines, "Node.js detected", app.node_version().is_some());
     check(
         &mut lines,
         "package manager available",
-        runtime.map(|r| !r.available_package_managers.is_empty()).unwrap_or(false),
+        !app.available_package_managers().is_empty(),
     );
 
     match detect_lock_file(&app.project_path) {
@@ -59,9 +55,8 @@ pub fn render(frame: &mut Frame, app: &App, area: Rect) {
         None => check(&mut lines, "lock file present", false),
     }
 
-    let content = Paragraph::new(lines).block(
-        Block::default().title(" Doctor ").borders(Borders::ALL),
-    );
+    let content =
+        Paragraph::new(lines).block(Block::default().title(" Doctor ").borders(Borders::ALL));
 
     frame.render_widget(content, area);
 }

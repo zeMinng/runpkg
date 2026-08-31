@@ -3,7 +3,9 @@ use std::path::PathBuf;
 use tokio::sync::mpsc::UnboundedReceiver;
 
 use super::{Action, AppState, Focus, OutputState, Screen};
+use crate::project::info::ProjectInfo;
 use crate::system::runner::ScriptEvent;
+use crate::system::runtime::RuntimeInfo;
 
 pub struct App {
     pub state: AppState,
@@ -32,6 +34,58 @@ impl App {
             pending_script: None,
             should_quit: false,
         }
+    }
+
+    // Read-only queries form the boundary between application state and the
+    // presentation layer. TUI screens should prefer these over reaching into
+    // `state` directly.
+    pub fn project(&self) -> Option<&ProjectInfo> {
+        self.state.project.as_ref()
+    }
+
+    pub fn runtime(&self) -> Option<&RuntimeInfo> {
+        self.state.runtime.as_ref()
+    }
+
+    pub fn project_name(&self) -> &str {
+        self.project()
+            .map(|project| project.name.as_str())
+            .or_else(|| {
+                self.project_path
+                    .file_name()
+                    .and_then(|name| name.to_str())
+            })
+            .unwrap_or("Unknown")
+    }
+
+    pub fn project_version(&self) -> &str {
+        self.project()
+            .map(|project| project.version.as_str())
+            .unwrap_or("0.0.0")
+    }
+
+    pub fn script_count(&self) -> usize {
+        self.project().map(|project| project.scripts.len()).unwrap_or(0)
+    }
+
+    pub fn dependency_count(&self) -> usize {
+        self.project()
+            .map(|project| {
+                project.dependencies.len()
+                    + project.dev_dependencies.len()
+                    + project.peer_dependencies.len()
+            })
+            .unwrap_or(0)
+    }
+
+    pub fn node_version(&self) -> Option<&str> {
+        self.runtime().and_then(|runtime| runtime.node_version.as_deref())
+    }
+
+    pub fn available_package_managers(&self) -> &[String] {
+        self.runtime()
+            .map(|runtime| runtime.available_package_managers.as_slice())
+            .unwrap_or(&[])
     }
 
     pub fn update(&mut self, action: Action) {
@@ -65,7 +119,7 @@ impl App {
                     self.script_cursor = step(self.script_cursor, delta, self.script_count());
                 }
                 Screen::Dependencies => {
-                    self.dep_cursor = step(self.dep_cursor, delta, self.dep_count());
+                    self.dep_cursor = step(self.dep_cursor, delta, self.dependency_count());
                 }
                 _ => {}
             },
@@ -103,7 +157,6 @@ impl App {
     }
 
     /// Move keyboard focus from the sidebar into the content pane.
-    /// Only screens with an interactive list are focusable. (焦点从侧边栏进入内容区)
     fn enter_content(&mut self) {
         if self.focus == Focus::Sidebar
             && matches!(self.screen, Screen::Scripts | Screen::Dependencies)
@@ -112,7 +165,7 @@ impl App {
         }
     }
 
-    /// Return keyboard focus from the content pane back to the sidebar. (焦点退回侧边栏)
+    /// Return keyboard focus from the content pane back to the sidebar.
     fn exit_content(&mut self) {
         if self.focus == Focus::Content {
             self.focus = Focus::Sidebar;
@@ -122,29 +175,15 @@ impl App {
     fn refresh_project(&mut self) {
         self.state.project = crate::project::package_json::load_from(&self.project_path)
             .ok()
-            .map(crate::project::info::ProjectInfo::from);
+            .map(ProjectInfo::from);
         self.script_cursor = 0;
         self.dep_cursor = 0;
     }
 
-    pub fn script_count(&self) -> usize {
-        self.state.project.as_ref().map(|p| p.scripts.len()).unwrap_or(0)
-    }
-
     pub fn script_name_at(&self, index: usize) -> Option<String> {
-        self.state
-            .project
-            .as_ref()
-            .and_then(|p| p.scripts.get_index(index))
+        self.project()
+            .and_then(|project| project.scripts.get_index(index))
             .map(|(name, _)| name.clone())
-    }
-
-    pub fn dep_count(&self) -> usize {
-        self.state
-            .project
-            .as_ref()
-            .map(|p| p.dependencies.len() + p.dev_dependencies.len() + p.peer_dependencies.len())
-            .unwrap_or(0)
     }
 
     /// Spawn the script queued by `Action::RunScript`, attaching its output receiver.
@@ -153,8 +192,8 @@ impl App {
             return;
         };
 
-        let project = self.state.project.as_ref();
-        let runtime = self.state.runtime.as_ref();
+        let project = self.project();
+        let runtime = self.runtime();
         let pm = crate::system::pm::preferred(project, runtime);
         let (program, args) = crate::system::pm::build_run_command(&pm, &name);
 

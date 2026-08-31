@@ -13,7 +13,7 @@ pub fn render(frame: &mut Frame, app: &App, area: Rect) {
         .split(area);
 
     let focused = app.focus == Focus::Content;
-    let scripts = app.state.project.as_ref().map(|p| &p.scripts);
+    let scripts = app.project().map(|project| &project.scripts);
     script_list::render(frame, chunks[0], scripts, app.script_cursor, focused);
     output::render(frame, chunks[1], &app.output);
 }
