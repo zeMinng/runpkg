@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use indexmap::IndexMap;
 use super::package_json::PackageJson;
 
@@ -40,4 +42,12 @@ fn map_to_entries(map: Option<IndexMap<String, String>>) -> Vec<DepEntry> {
         .into_iter()
         .map(|(name, version)| DepEntry { name, version })
         .collect()
+}
+
+/// Load `package.json` from `project_path` and convert it to `ProjectInfo`.
+/// Missing / invalid files degrade to `None` (the UI shows "No package.json loaded").
+pub fn load(project_path: &Path) -> Option<ProjectInfo> {
+    super::package_json::load_from(project_path)
+        .ok()
+        .map(ProjectInfo::from)
 }

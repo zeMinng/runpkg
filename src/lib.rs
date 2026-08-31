@@ -5,11 +5,11 @@ pub mod project;
 pub mod system;
 pub mod tui;
 
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use cli::Commands;
 use project::{info::ProjectInfo, package_json};
-use system::runtime::collect_runtime_info;
+use system::{git, runtime::collect_runtime_info};
 
 
 /// Unified entry point: dispatch to a subcommand or the TUI. (统一入口：分派到子命令或 TUI)
@@ -49,15 +49,10 @@ async fn run_cli(project_path: PathBuf, command: Commands) -> anyhow::Result<()>
 async fn run_tui(project_path: PathBuf) -> anyhow::Result<()> {
     let (runtime, project) = tokio::join!(
         collect_runtime_info(),
-        async { load_project(&project_path) }
+        async { project::info::load(&project_path) }
     );
 
     let mut app = app::App::new(app::AppState::new(project, Some(runtime)), project_path);
+    app.git = git::status(&app.project_path);
     tui::run(&mut app)
-}
-
-fn load_project(project_path: &Path) -> Option<ProjectInfo> {
-    package_json::load_from(project_path)
-        .ok()
-        .map(ProjectInfo::from)
 }

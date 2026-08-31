@@ -1,6 +1,8 @@
+use std::path::Path;
 use std::time::Duration;
 use tokio::process::Command;
 
+use crate::constants::paths::LOCK_FILES;
 use crate::project::info::ProjectInfo;
 use crate::system::runtime::RuntimeInfo;
 
@@ -59,8 +61,16 @@ pub async fn detect_available() -> Vec<String> {
 }
 
 /// Resolve which package manager to run scripts with.
-/// Priority: `project.packageManager` name → first available on PATH → `npm`.
-pub fn preferred(project: Option<&ProjectInfo>, runtime: Option<&RuntimeInfo>) -> String {
+/// Priority:
+/// 1. `project.packageManager` field (explicit declaration) — name before `@`.
+/// 2. Lock file signal (`pnpm-lock.yaml` → pnpm, etc.).
+/// 3. First package manager available on PATH (pnpm > bun > yarn > npm).
+/// 4. `npm` fallback.
+pub fn preferred(
+    project: Option<&ProjectInfo>,
+    runtime: Option<&RuntimeInfo>,
+    project_path: &Path,
+) -> String {
     if let Some(name) = project
         .and_then(|p| p.package_manager.as_deref())
         .and_then(|s| s.split('@').next())
@@ -68,11 +78,23 @@ pub fn preferred(project: Option<&ProjectInfo>, runtime: Option<&RuntimeInfo>) -
         return name.to_string();
     }
 
+    if let Some(pm) = lock_file_pm(project_path) {
+        return pm.to_string();
+    }
+
     if let Some(pm) = runtime.and_then(|r| r.available_package_managers.first()) {
         return pm.clone();
     }
 
     "npm".to_string()
+}
+
+/// Infer the package manager from the presence of a lock file.
+fn lock_file_pm(project_path: &Path) -> Option<&'static str> {
+    LOCK_FILES
+        .iter()
+        .find(|(file, _)| project_path.join(file).exists())
+        .map(|(_, pm)| *pm)
 }
 
 /// Build the command that runs `script` via `pm`.

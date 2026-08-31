@@ -1,3 +1,4 @@
+pub mod git;
 pub mod node;
 pub mod pm;
 pub mod runner;

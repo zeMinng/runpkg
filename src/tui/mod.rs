@@ -51,13 +51,13 @@ fn render(frame: &mut Frame, app: &App) {
     let layout = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Length(3),
+            Constraint::Length(2),
             Constraint::Min(1),
             Constraint::Length(2),
         ])
         .split(area);
 
-    components::header::render(frame, layout[0]);
+    components::header::render(frame, layout[0], app);
 
     let body = Layout::default()
         .direction(Direction::Horizontal)

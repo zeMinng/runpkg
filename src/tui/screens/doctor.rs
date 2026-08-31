@@ -81,6 +81,6 @@ fn check(lines: &mut Vec<Line>, label: &str, ok: bool) {
 fn detect_lock_file(project_path: &Path) -> Option<&'static str> {
     LOCK_FILES
         .iter()
-        .find(|&&name| project_path.join(name).exists())
-        .copied()
+        .find(|(file, _)| project_path.join(file).exists())
+        .map(|(file, _)| *file)
 }

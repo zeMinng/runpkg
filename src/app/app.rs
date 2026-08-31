@@ -3,11 +3,13 @@ use std::path::PathBuf;
 use tokio::sync::mpsc::UnboundedReceiver;
 
 use super::{Action, AppState, Focus, OutputState, Screen};
+use crate::system::git::GitInfo;
 use crate::system::runner::ScriptEvent;
 
 pub struct App {
     pub state: AppState,
     pub project_path: PathBuf,
+    pub git: GitInfo,
     pub screen: Screen,
     pub focus: Focus,
     pub script_cursor: usize,
@@ -23,6 +25,7 @@ impl App {
         Self {
             state,
             project_path,
+            git: GitInfo::default(),
             screen: Screen::Dashboard,
             focus: Focus::Sidebar,
             script_cursor: 0,
@@ -120,9 +123,8 @@ impl App {
     }
 
     fn refresh_project(&mut self) {
-        self.state.project = crate::project::package_json::load_from(&self.project_path)
-            .ok()
-            .map(crate::project::info::ProjectInfo::from);
+        self.state.project = crate::project::info::load(&self.project_path);
+        self.git = crate::system::git::status(&self.project_path);
         self.script_cursor = 0;
         self.dep_cursor = 0;
     }
@@ -155,7 +157,7 @@ impl App {
 
         let project = self.state.project.as_ref();
         let runtime = self.state.runtime.as_ref();
-        let pm = crate::system::pm::preferred(project, runtime);
+        let pm = crate::system::pm::preferred(project, runtime, &self.project_path);
         let (program, args) = crate::system::pm::build_run_command(&pm, &name);
 
         let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
