@@ -57,7 +57,7 @@ fn render(frame: &mut Frame, app: &App) {
         ])
         .split(area);
 
-    components::header::render(frame, layout[0], app);
+    components::header::render(frame, layout[0]);
 
     let body = Layout::default()
         .direction(Direction::Horizontal)
